@@ -19,10 +19,10 @@
       <None Update="appsettings.json">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
-      <None Update="ScanDataFunnel\Auc-ScanData.lua">
+      <None Update="Spreadsheets\AhAnalytics.xlsx">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
-      <None Update="Spreadsheets\AhAnalytics.xlsx">
+      <None Update="ScanDataFunnel\Auc-ScanData.lua">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
     </ItemGroup>

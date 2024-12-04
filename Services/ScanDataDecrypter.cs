@@ -35,10 +35,10 @@ public class ScanDataDecrypter(ILogger logger, IConfiguration configuration)
             }
         });
 
-        return ReturnCheapestAuctions(auctionDataObjects);
+        return GetAverageOfCheapestTenAuctionsOrLess(auctionDataObjects);
     }
 
-    private static List<AuctionData> ReturnCheapestAuctions(List<AuctionData> auctionDataObjects)
+    private static List<AuctionData> GetAverageOfCheapestTenAuctionsOrLess(List<AuctionData> auctionDataObjects)
     {
         var itemGroup = auctionDataObjects.GroupBy(ado => ado.ItemName);
 
@@ -46,11 +46,31 @@ public class ScanDataDecrypter(ILogger logger, IConfiguration configuration)
 
         foreach (var auctionDatas in itemGroup)
         {
-            var cheapestOne = auctionDatas.Where(ad => ad.BuyoutInCopper != 0)
-                                          .MinBy(ad => ad.BuyoutInCopper);
+            var withoutZeroPriceAsc = auctionDatas.Where(ad => ad.BuyoutInCopper != 0)
+                                                  .OrderBy(ad => ad.BuyoutInCopper)
+                                                  .ToList();
 
-            if (cheapestOne != null)
-                cheapestAuctionsPerItem.Add(cheapestOne);
+            var itemsToTake = 10;
+
+            if(withoutZeroPriceAsc.Count == 0)
+                continue;
+
+            if (withoutZeroPriceAsc.Count < itemsToTake)
+                itemsToTake = withoutZeroPriceAsc.Count;
+
+            var selection = withoutZeroPriceAsc.Take(itemsToTake)
+                                               .ToList();
+
+            var totalPrice            = selection.Sum(s => s.BuyoutInCopper);
+            var averageBuyoutInCopper = totalPrice / itemsToTake;
+
+            var cheapestOne = selection.MinBy(ad => ad.BuyoutInCopper);
+
+            if (cheapestOne == null)
+                continue;
+
+            cheapestOne.BuyoutInCopper = averageBuyoutInCopper;
+            cheapestAuctionsPerItem.Add(cheapestOne);
         }
 
         return cheapestAuctionsPerItem;
@@ -78,7 +98,7 @@ public class ScanDataDecrypter(ILogger logger, IConfiguration configuration)
 
     private static void StripBatches(string relevantContent, List<string> resultStrings)
     {
-        var batches       = relevantContent.Split("\"return {{");
+        var batches = relevantContent.Split("\"return {{");
 
         foreach (var batch in batches)
         {

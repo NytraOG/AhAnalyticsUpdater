@@ -25,12 +25,52 @@ public class SpreadsheetService
 
     public void UpdateSpreadsheet() => DoActionWithExceptionlogging(() =>
     {
-        var auctions      = scanDataDecrypter.GetAllAuctions();
+        var auctions = scanDataDecrypter.GetAllAuctions();
+
+        UpdateMaterialPrices(auctions);
+        //UpdateSellingMarketprices(auctions);
+    });
+
+    public void UpdateSellingMarketprices(List<AuctionData> auctions)
+    {
+        var       directory   = GetSpreadsheetDirectory();
+        using var exclPackage = new ExcelPackage(new FileInfo(directory));
+        workbook = exclPackage.Workbook;
+        var mainSheet = workbook.Worksheets[0];
+
+        var cellMarketitems = new List<CellMarketItem>();
+
+        var cells = mainSheet.Cells.ToArray();
+
+        for (var i = 2; i < cells.Length; i++)
+        {
+            var rowNumber     = i;
+            var relevantCells = cells.Where(c => c.Address.Contains($"{rowNumber}")).ToArray();
+
+            if (relevantCells.Length < 2)
+                continue;
+
+            var marketItem = relevantCells[0].Value.ToString();
+            var price      = Convert.ToDecimal(relevantCells[1].Value);
+
+            var cellMaterial = new CellMarketItem
+            {
+                MarketItem          = marketItem,
+                Price               = price,
+                CellAddressToUpdate = relevantCells[1].Address
+            };
+
+            cellMarketitems.Add(cellMaterial);
+        }
+    }
+
+    private void UpdateMaterialPrices(List<AuctionData> auctions)
+    {
         var cellMaterials = GetMaterialsFromCells();
 
         UpdateTemporaryMaterialPrices(cellMaterials, auctions);
         SaveMaterialPricesToSheet(cellMaterials);
-    });
+    }
 
     private void SaveMaterialPricesToSheet(List<CellMaterial> cellMaterials)
     {
@@ -41,10 +81,10 @@ public class SpreadsheetService
 
         foreach (var cellMaterial in cellMaterials)
         {
-            if(cellMaterial.Material == "Empty Vial" || cellMaterial.Material == "Leaded Vial" || cellMaterial.Material == "Gilded Vial")
+            if (cellMaterial.Material == "Empty Vial" || cellMaterial.Material == "Leaded Vial" || cellMaterial.Material == "Gilded Vial")
                 continue;
 
-            if(cellMaterial.Price == 0)
+            if (cellMaterial.Price == 0)
                 continue;
 
             var cell = matsSheet.Cells.FirstOrDefault(c => c.Address == cellMaterial.CellAddressToUpdate);
@@ -109,8 +149,6 @@ public class SpreadsheetService
 
         return resultSet;
     }
-
-    public void UpdateSellingMarketprices() { }
 
     private string GetSpreadsheetDirectory()
     {
