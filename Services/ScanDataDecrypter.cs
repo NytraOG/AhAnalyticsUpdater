@@ -10,7 +10,7 @@ public class ScanDataDecrypter(ILogger logger, IConfiguration configuration)
     private readonly IConfiguration configuration      = configuration;
     private readonly ILogger        logger             = logger;
 
-    public IEnumerable<AuctionData> GetAllAuctions()
+    public List<AuctionData> GetAllAuctions()
     {
         var auctionDataObjects = new List<AuctionData>();
 
@@ -35,13 +35,19 @@ public class ScanDataDecrypter(ILogger logger, IConfiguration configuration)
             }
         });
 
+        return ReturnCheapestAuctions(auctionDataObjects);
+    }
+
+    private static List<AuctionData> ReturnCheapestAuctions(List<AuctionData> auctionDataObjects)
+    {
         var itemGroup = auctionDataObjects.GroupBy(ado => ado.ItemName);
 
         var cheapestAuctionsPerItem = new List<AuctionData>();
 
         foreach (var auctionDatas in itemGroup)
         {
-            var cheapestOne = auctionDatas.MinBy(ad => ad.BuyoutInCopper);
+            var cheapestOne = auctionDatas.Where(ad => ad.BuyoutInCopper != 0)
+                                          .MinBy(ad => ad.BuyoutInCopper);
 
             if (cheapestOne != null)
                 cheapestAuctionsPerItem.Add(cheapestOne);
@@ -66,6 +72,7 @@ public class ScanDataDecrypter(ILogger logger, IConfiguration configuration)
     {
         while (relevantContent.EndsWith('}') || relevantContent.EndsWith(','))
             relevantContent = relevantContent[..^1].Trim();
+
         return relevantContent;
     }
 
@@ -113,7 +120,7 @@ public class ScanDataDecrypter(ILogger logger, IConfiguration configuration)
         }
         catch (Exception e)
         {
-            logger.LogError(e.Message);
+            logger.LogError(e.StackTrace);
         }
     }
 }

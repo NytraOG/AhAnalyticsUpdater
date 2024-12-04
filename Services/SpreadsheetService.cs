@@ -6,10 +6,11 @@ namespace AhAnalyticsPriceUpdater.Services;
 
 public class SpreadsheetService
 {
-    private const    string             Filename = "Spreadsheets\\AhAnalytics.xlsx";
-    private readonly ILogger            logger;
-    private readonly ScanDataDecrypter  scanDataDecrypter;
-    private          List<CellMaterial> cellMaterials;
+    private const    string            RelativeFileDirectory = "Spreadsheets\\AhAnalytics.xlsx";
+    private readonly ILogger           logger;
+    private readonly ScanDataDecrypter scanDataDecrypter;
+    private          ExcelWorksheet    matsSheet;
+    private          ExcelWorkbook     workbook;
 
     public SpreadsheetService(ScanDataDecrypter scanDataDecrypter,
                               ILogger           logger)
@@ -22,21 +23,67 @@ public class SpreadsheetService
 
     private void Initialize() => ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
-    public void UpdateSpreadsheet()
+    public void UpdateSpreadsheet() => DoActionWithExceptionlogging(() =>
     {
-        GetMatsDictionary();
+        var auctions      = scanDataDecrypter.GetAllAuctions();
+        var cellMaterials = GetMaterialsFromCells();
 
-        var auctions = scanDataDecrypter.GetAllAuctions();
+        UpdateTemporaryMaterialPrices(cellMaterials, auctions);
+        SaveMaterialPricesToSheet(cellMaterials);
+    });
+
+    private void SaveMaterialPricesToSheet(List<CellMaterial> cellMaterials)
+    {
+        var       directory   = GetSpreadsheetDirectory();
+        using var exclPackage = new ExcelPackage(new FileInfo(directory));
+        workbook  = exclPackage.Workbook;
+        matsSheet = workbook.Worksheets[2];
+
+        foreach (var cellMaterial in cellMaterials)
+        {
+            if(cellMaterial.Material == "Empty Vial" || cellMaterial.Material == "Leaded Vial" || cellMaterial.Material == "Gilded Vial")
+                continue;
+
+            if(cellMaterial.Price == 0)
+                continue;
+
+            var cell = matsSheet.Cells.FirstOrDefault(c => c.Address == cellMaterial.CellAddressToUpdate);
+
+            if (cell is null)
+                continue;
+
+            cell.Value = cellMaterial.Price;
+        }
+
+        var fileInfo = new FileInfo(directory);
+        exclPackage.SaveAs(fileInfo);
     }
 
-    private void GetMatsDictionary()
+    private void UpdateTemporaryMaterialPrices(List<CellMaterial> cellMaterials, List<AuctionData> auctions)
+    {
+        foreach (var cellMaterial in cellMaterials)
+        {
+            var fittingAuction = auctions.FirstOrDefault(a => a.ItemName == cellMaterial.Material);
+
+            if (fittingAuction is null)
+            {
+                logger.LogInformation($"No fitting auction found for Item '{cellMaterial.Material}' from Cell {cellMaterial.CellAddressToUpdate}");
+                continue;
+            }
+
+            cellMaterial.Price = fittingAuction.BuyoutInSilver;
+        }
+    }
+
+    private List<CellMaterial> GetMaterialsFromCells()
     {
         var directory = GetSpreadsheetDirectory();
 
         using var exclPackage = new ExcelPackage(new FileInfo(directory));
-        var       matsSheet   = exclPackage.Workbook.Worksheets[2];
-        var       cells       = matsSheet.Cells.ToArray();
+        workbook  = exclPackage.Workbook;
+        matsSheet = workbook.Worksheets[2];
 
+        var cells     = matsSheet.Cells.ToArray();
         var resultSet = new List<CellMaterial>();
 
         for (var i = 2; i < cells.Length; i++)
@@ -60,7 +107,7 @@ public class SpreadsheetService
             resultSet.Add(cellMaterial);
         }
 
-        cellMaterials = resultSet;
+        return resultSet;
     }
 
     public void UpdateSellingMarketprices() { }
@@ -68,11 +115,23 @@ public class SpreadsheetService
     private string GetSpreadsheetDirectory()
     {
         var baseDirectory     = Directory.GetCurrentDirectory();
-        var scanDataDirectory = Path.Combine(baseDirectory, Filename);
+        var scanDataDirectory = Path.Combine(baseDirectory, RelativeFileDirectory);
 
         if (scanDataDirectory is null)
             throw new Exception("No ScanData Directory configured!");
 
         return scanDataDirectory;
+    }
+
+    private void DoActionWithExceptionlogging(Action action)
+    {
+        try
+        {
+            action();
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e.StackTrace);
+        }
     }
 }
