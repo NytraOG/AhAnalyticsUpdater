@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 
-namespace AhAnalyticsPriceUpdater;
+namespace AhAnalyticsPriceUpdater.Services;
 
 public class ScanDataDecrypter(ILogger logger)
 {

@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using AhAnalyticsPriceUpdater.Services;
+using Microsoft.Extensions.Logging;
 
 namespace AhAnalyticsPriceUpdater;
 
@@ -8,7 +9,7 @@ public static class LogProvider
 
     private static void InitializeLogging()
     {
-        var logFilePath = Directory.GetCurrentDirectory();
+        var logFilePath = Path.Combine(Directory.GetCurrentDirectory(), nameof(ScanDataDecrypter) + ".log");
 
         var loggerFactory = LoggerFactory.Create(builder =>
         {
