@@ -11,4 +11,4 @@ var            logger        = LogProvider.GetLogger();
 
 var decrypter = new ScanDataDecrypter(logger, configuration);
 
-decrypter.GetAllAuctions();
+var data = decrypter.GetAllAuctions();

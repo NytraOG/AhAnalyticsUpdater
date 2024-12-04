@@ -3,6 +3,7 @@
 public class AuctionData
 {
     public string? ItemName       { get; set; }
+    public string? Seller         { get; set; }
     public int     StackSize      { get; set; }
     public int     MinLvl         { get; set; }
     public int     BuyoutInCopper { get; set; }
