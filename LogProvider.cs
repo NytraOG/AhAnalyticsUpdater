@@ -5,7 +5,7 @@ namespace AhAnalyticsPriceUpdater;
 
 public static class LogProvider
 {
-    private static ILogger? logger;
+    private static ILogger logger;
 
     private static void InitializeLogging()
     {
@@ -21,7 +21,7 @@ public static class LogProvider
         logger ??= loggerFactory.CreateLogger(nameof(ScanDataDecrypter));
     }
 
-    public static ILogger? GetLogger()
+    public static ILogger GetLogger()
     {
         InitializeLogging();
 

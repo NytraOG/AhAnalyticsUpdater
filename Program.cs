@@ -1,10 +1,14 @@
-﻿// See https://aka.ms/new-console-template for more information
+﻿using AhAnalyticsPriceUpdater;
+using AhAnalyticsPriceUpdater.Services;
+using Microsoft.Extensions.Configuration;
 
-using AhAnalyticsPriceUpdater;
-using Microsoft.Extensions.Logging;
+var builder = new ConfigurationBuilder()
+             .SetBasePath(AppContext.BaseDirectory)
+             .AddJsonFile("appsettings.json", true, true);
 
-Console.WriteLine("Hello, World!");
+IConfiguration configuration = builder.Build();
+var            logger        = LogProvider.GetLogger();
 
-var logger = LogProvider.GetLogger();
+var decrypter = new ScanDataDecrypter(logger, configuration);
 
-logger.LogInformation("Hihi");
+decrypter.GetAllAuctions();
