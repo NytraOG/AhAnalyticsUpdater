@@ -28,18 +28,16 @@ public static class LogProvider
     }
 }
 
-public class CustomFileLoggerProvider : ILoggerProvider
+internal class CustomFileLoggerProvider(StreamWriter logFileWriter) : ILoggerProvider
 {
-    private readonly StreamWriter logFileWriter;
-
-    public CustomFileLoggerProvider(StreamWriter logFileWriter) => this.logFileWriter = logFileWriter ?? throw new ArgumentNullException(nameof(logFileWriter));
+    private readonly StreamWriter logFileWriter = logFileWriter ?? throw new ArgumentNullException(nameof(logFileWriter));
 
     public ILogger CreateLogger(string categoryName) => new CustomFileLogger(categoryName, logFileWriter);
 
     public void Dispose() => logFileWriter.Dispose();
 }
 
-public class CustomFileLogger(string categoryName, StreamWriter logFileWriter) : ILogger
+internal class CustomFileLogger(string categoryName, StreamWriter logFileWriter) : ILogger
 {
     public IDisposable BeginScope<TState>(TState state) => null;
 

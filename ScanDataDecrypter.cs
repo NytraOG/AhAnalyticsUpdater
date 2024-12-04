@@ -1,6 +1,20 @@
-﻿namespace AhAnalyticsPriceUpdater;
+﻿using Microsoft.Extensions.Logging;
 
-public class ScanDataDecrypter
+namespace AhAnalyticsPriceUpdater;
+
+public class ScanDataDecrypter(ILogger logger)
 {
-    
+    private readonly ILogger logger = logger;
+
+    private void DoActionWithExceptionlogging(Action action)
+    {
+        try
+        {
+            action();
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Knall weg :C");
+        }
+    }
 }
