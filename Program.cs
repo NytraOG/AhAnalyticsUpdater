@@ -10,5 +10,6 @@ IConfiguration configuration = builder.Build();
 var            logger        = LogProvider.GetLogger();
 
 var decrypter = new ScanDataDecrypter(logger, configuration);
+var sheetService = new SpreadsheetService(decrypter, logger);
 
-var data = decrypter.GetAllAuctions();
+sheetService.UpdateSpreadsheet();

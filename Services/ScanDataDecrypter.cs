@@ -19,44 +19,79 @@ public class ScanDataDecrypter(ILogger logger, IConfiguration configuration)
             var directory = GetScanDataDirectory();
             var file      = File.ReadAllText(directory);
 
-            var relevanterContent = file.Split("[\"ropes\"] = {")[1].Trim();
+            var normalizedScanData = GetNormalizedScanData(file);
 
-            while (relevanterContent.EndsWith('}') || relevanterContent.EndsWith(','))
-                relevanterContent = relevanterContent[..^1].Trim();
-
-            var resultStrings = new List<string>();
-            var batches       = relevanterContent.Split("\"return {{");
-
-            foreach (var batch in batches)
+            foreach (var scanDataStringValue in normalizedScanData)
             {
-                var resultSet = batch.Split("},{");
-                resultStrings.AddRange(resultSet);
-            }
-
-            foreach (var result in resultStrings)
-            {
-                if (string.IsNullOrWhiteSpace(result))
+                if (string.IsNullOrWhiteSpace(scanDataStringValue))
                     continue;
 
-                var fields = result.Split(',');
+                var fields = scanDataStringValue.Split(',');
 
                 if (!fields.Any() || fields.Length < 20)
                     continue;
 
-                var obj = new AuctionData
-                {
-                    ItemName       = fields[8].Replace("\\\"", string.Empty),
-                    StackSize      = int.Parse(fields[10]),
-                    MinLvl         = int.Parse(fields[13]),
-                    BuyoutInCopper = int.Parse(fields[16]),
-                    Seller         = fields[19].Replace("\\\"", string.Empty)
-                };
-
-                auctionDataObjects.Add(obj);
+                CreateAuctionDataObject(fields, auctionDataObjects);
             }
         });
 
-        return auctionDataObjects;
+        var itemGroup = auctionDataObjects.GroupBy(ado => ado.ItemName);
+
+        var cheapestAuctionsPerItem = new List<AuctionData>();
+
+        foreach (var auctionDatas in itemGroup)
+        {
+            var cheapestOne = auctionDatas.MinBy(ad => ad.BuyoutInCopper);
+
+            if (cheapestOne != null)
+                cheapestAuctionsPerItem.Add(cheapestOne);
+        }
+
+        return cheapestAuctionsPerItem;
+    }
+
+    private static List<string> GetNormalizedScanData(string file)
+    {
+        var resultStrings   = new List<string>();
+        var relevantContent = file.Split("[\"ropes\"] = {")[1].Trim();
+
+        relevantContent = RemoveEndingClump(relevantContent);
+
+        StripBatches(relevantContent, resultStrings);
+
+        return resultStrings;
+    }
+
+    private static string RemoveEndingClump(string relevantContent)
+    {
+        while (relevantContent.EndsWith('}') || relevantContent.EndsWith(','))
+            relevantContent = relevantContent[..^1].Trim();
+        return relevantContent;
+    }
+
+    private static void StripBatches(string relevantContent, List<string> resultStrings)
+    {
+        var batches       = relevantContent.Split("\"return {{");
+
+        foreach (var batch in batches)
+        {
+            var resultSet = batch.Split("},{");
+            resultStrings.AddRange(resultSet);
+        }
+    }
+
+    private static void CreateAuctionDataObject(string[] fields, List<AuctionData> auctionDataObjects)
+    {
+        var obj = new AuctionData
+        {
+            ItemName       = fields[8].Replace("\\\"", string.Empty),
+            StackSize      = int.Parse(fields[10]),
+            MinLvl         = int.Parse(fields[13]),
+            BuyoutInCopper = int.Parse(fields[16]),
+            Seller         = fields[19].Replace("\\\"", string.Empty)
+        };
+
+        auctionDataObjects.Add(obj);
     }
 
     private string GetScanDataDirectory()
