@@ -28,16 +28,67 @@ public class SpreadsheetService
         var auctions = scanDataDecrypter.GetAllAuctions();
 
         UpdateMaterialPrices(auctions);
-        //UpdateSellingMarketprices(auctions);
+        UpdateSellingMarketprices(auctions);
     });
 
-    public void UpdateSellingMarketprices(List<AuctionData> auctions)
+    private void UpdateMaterialPrices(List<AuctionData> auctions)
+    {
+        var cellMaterials = GetMaterialsFromCells();
+
+        UpdateTemporaryMaterialPrices(cellMaterials, auctions);
+        SaveMaterialPricesToSheet(cellMaterials);
+    }
+
+    private void UpdateSellingMarketprices(List<AuctionData> auctions)
     {
         var       directory   = GetSpreadsheetDirectory();
         using var exclPackage = new ExcelPackage(new FileInfo(directory));
-        workbook = exclPackage.Workbook;
-        var mainSheet = workbook.Worksheets[0];
+        var       book        = exclPackage.Workbook;
+        var       mainSheet   = book.Worksheets[0];
 
+        var cellMarketitems = GetMarketItemsFromCells(mainSheet);
+
+        UpdateTemporaryMarketItemPrices(auctions, cellMarketitems);
+        SaveMarketItemPricesToSheet(cellMarketitems, mainSheet);
+
+        var fileInfo = new FileInfo(directory);
+        exclPackage.SaveAs(fileInfo);
+    }
+
+    private void SaveMarketItemPricesToSheet(List<CellMarketItem> cellMarketitems, ExcelWorksheet mainSheet)
+    {
+        foreach (var cellMarketItem in cellMarketitems)
+        {
+            if (cellMarketItem.Price == 0)
+                continue;
+
+            var cell = mainSheet.Cells.FirstOrDefault(c => c.Address == cellMarketItem.CellAddressToUpdate);
+
+            if (cell is null)
+                continue;
+
+            cell.Value = cellMarketItem.Price;
+        }
+    }
+
+    private void UpdateTemporaryMarketItemPrices(List<AuctionData> auctions, List<CellMarketItem> cellMarketitems)
+    {
+        foreach (var cellMarketItem in cellMarketitems)
+        {
+            var fittingAuction = auctions.FirstOrDefault(a => a.ItemName == cellMarketItem.MarketItem);
+
+            if (fittingAuction is null)
+            {
+                logger.LogInformation($"No fitting auction found for Item '{cellMarketItem.MarketItem}' from Cell {cellMarketItem.CellAddressToUpdate}");
+                continue;
+            }
+
+            cellMarketItem.Price = fittingAuction.BuyoutInSilver;
+        }
+    }
+
+    private static List<CellMarketItem> GetMarketItemsFromCells(ExcelWorksheet mainSheet)
+    {
         var cellMarketitems = new List<CellMarketItem>();
 
         var cells = mainSheet.Cells.ToArray();
@@ -47,7 +98,7 @@ public class SpreadsheetService
             var rowNumber     = i;
             var relevantCells = cells.Where(c => c.Address.Contains($"{rowNumber}")).ToArray();
 
-            if (relevantCells.Length < 2)
+            if (relevantCells.Length < 2 || relevantCells[0]?.Value is null)
                 continue;
 
             var marketItem = relevantCells[0].Value.ToString();
@@ -62,14 +113,8 @@ public class SpreadsheetService
 
             cellMarketitems.Add(cellMaterial);
         }
-    }
 
-    private void UpdateMaterialPrices(List<AuctionData> auctions)
-    {
-        var cellMaterials = GetMaterialsFromCells();
-
-        UpdateTemporaryMaterialPrices(cellMaterials, auctions);
-        SaveMaterialPricesToSheet(cellMaterials);
+        return cellMarketitems;
     }
 
     private void SaveMaterialPricesToSheet(List<CellMaterial> cellMaterials)

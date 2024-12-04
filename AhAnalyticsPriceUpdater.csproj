@@ -20,7 +20,7 @@
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
       <None Update="Spreadsheets\AhAnalytics.xlsx">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
       <None Update="ScanDataFunnel\Auc-ScanData.lua">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
