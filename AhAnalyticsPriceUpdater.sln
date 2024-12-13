@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34616.47
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AhAnalyticsPriceUpdater", "AhAnalyticsPriceUpdater\AhAnalyticsPriceUpdater.csproj", "{8879EBAA-5A4C-4912-ABFD-6DC842F05280}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AhAnalyticsPriceUpdater", "AhAnalyticsPriceUpdater\AhAnalyticsPriceUpdater.csproj", "{8879EBAA-5A4C-4912-ABFD-6DC842F05280}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AhAnalyticsPriceUpdater.Frontend", "AhAnalyticsPriceUpdater.Frontend\AhAnalyticsPriceUpdater.Frontend.csproj", "{7931EE17-9C3C-44D3-9F6C-BBF16B512EA4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{8879EBAA-5A4C-4912-ABFD-6DC842F05280}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8879EBAA-5A4C-4912-ABFD-6DC842F05280}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8879EBAA-5A4C-4912-ABFD-6DC842F05280}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7931EE17-9C3C-44D3-9F6C-BBF16B512EA4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7931EE17-9C3C-44D3-9F6C-BBF16B512EA4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7931EE17-9C3C-44D3-9F6C-BBF16B512EA4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7931EE17-9C3C-44D3-9F6C-BBF16B512EA4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
