@@ -5,8 +5,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:AhAnalyticsPriceUpdater.Frontend"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="215" Width="290">
     <Grid>
-
+        <Button Content="Update Prices" HorizontalAlignment="Left" Margin="10,47,0,0" VerticalAlignment="Top" Height="120" Width="120"/>
+        <Button Content="Open Sheet" HorizontalAlignment="Stretch" Margin="140,47,0,0" VerticalAlignment="Top" Height="120" Width="120"/>
+        <ProgressBar Height="24" Margin="10,10,15,0" VerticalAlignment="Top" Value="45" Cursor="IBeam" Foreground="#FF06B025"/>
     </Grid>
 </Window>
