@@ -3,4 +3,6 @@
 public interface IDialogService
 {
     Task<string> SelectDirectory(string description = "Select a folder");
+
+    Task<string[]> GetAccountNames();
 }

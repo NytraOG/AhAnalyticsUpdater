@@ -4,15 +4,28 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="MainWindow" Height="390" Width="408">
+        Title="MainWindow" Height="317" Width="435">
 
     <Grid>
-        <StackPanel HorizontalAlignment="Left" VerticalAlignment="Top" Margin="16,39,0,0">
-            <Button Content="Select Installation Directory" Command="{Binding OpenFilePickerProcess}" Width="200" Height="30" />
-            <TextBlock Text="{Binding InstallationRootWorldOfWarcraft}" Width="350" TextWrapping="Wrap" Margin="10,20,10,0" FontSize="16" />
+        <StackPanel HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,10,10,10" Width="409">
+            <StackPanel Orientation="Horizontal" Margin="10,0,0,0">
+                <Button Content="Select Installation Directory" Command="{Binding ExecuteFilePickerProcess}" Width="196" Height="30" />
+                <ComboBox ItemsSource="{Binding AccountnamesFromInstallationDirectory}"
+                  SelectedItem="{Binding SelectedAccount}"
+                  Width="200" Height="30" FontSize="16" />
+            </StackPanel>
+
+            <TextBlock Text="{Binding InstallationRootWorldOfWarcraft}" Width="394" TextWrapping="Wrap" Margin="10,5,10,10" />
         </StackPanel>
-        <Button Content="Update Prices" HorizontalAlignment="Left" Margin="10,207,0,0" VerticalAlignment="Top" Height="120" Width="120" Command="{Binding StartUpdatePricesProcess}" RenderTransformOrigin="1.094,2.048"/>
-        <Button Content="Open Sheet" Margin="278,207,10,0" VerticalAlignment="Top" Height="120" Width="120" Command="{Binding OpenSpreadsheetProcess}"/>
-        <ProgressBar Height="24" Margin="10,10,15,0" VerticalAlignment="Top" Value="45" Cursor="IBeam" Foreground="#FF06B025" Grid.ColumnSpan="2" />
+
+        <StackPanel HorizontalAlignment="Left" VerticalAlignment="Top" Width="409">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,90,0,0" Width="270" Height="142">
+                <Button Content="Update Prices" HorizontalAlignment="Left" Margin="10,10,0,10" VerticalAlignment="Top" Height="120" Width="120" Command="{Binding StartUpdatePricesProcess}" RenderTransformOrigin="1.094,2.048"/>
+                <Button Content="Open Sheet" Margin="10,10,10,10" VerticalAlignment="Top" Height="120" Width="120" Command="{Binding OpenSpreadsheetProcess}"/>
+
+            </StackPanel>
+            <ProgressBar Height="24" Margin="10,10,10,10" VerticalAlignment="Top" Value="45" Cursor="IBeam" Foreground="#FF06B025" />
+        </StackPanel>
+
     </Grid>
 </Window>

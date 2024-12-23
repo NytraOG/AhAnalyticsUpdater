@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Input;
@@ -10,9 +11,11 @@ namespace AhAnalyticsPriceUpdater.Frontend.Models;
 
 public class UpdateProcessViewModel : INotifyPropertyChanged
 {
-    private readonly IDialogService     fileDialogService;
-    private readonly SpreadsheetService spreadsheetService;
-    private          string?            installationRootWorldOfWarcraft;
+    private readonly IDialogService               fileDialogService;
+    private readonly SpreadsheetService           spreadsheetService;
+    private          ObservableCollection<string> accountnamesFromInstallationDirectory;
+    private          string?                      installationRootWorldOfWarcraft;
+    private          string?                      selectedAccount;
 
     public UpdateProcessViewModel(SpreadsheetService spreadsheetService, IDialogService fileDialogService)
     {
@@ -21,20 +24,32 @@ public class UpdateProcessViewModel : INotifyPropertyChanged
 
         StartUpdatePricesProcess = new AsyncRelayCommand(StartUpdatePrices);
         OpenSpreadsheetProcess   = new AsyncRelayCommand(OpenSpreadsheet);
-        OpenFilePickerProcess    = new AsyncRelayCommand(OpenFilePicker);
+        ExecuteFilePickerProcess = new AsyncRelayCommand(ExecuteFilePicker);
     }
 
-    public ICommand                           StartUpdatePricesProcess        { get; }
-    public bool                               StartUpdatePricesInProgress     { get; set; }
-    public ICommand                           OpenSpreadsheetProcess          { get; }
-    public bool                               OpenSpreadsheetInProgress       { get; set; }
-    public ICommand                           OpenFilePickerProcess           { get; }
-    public bool                               OpenFilePickerInProgress        { get; set; }
+    public ICommand StartUpdatePricesProcess    { get; }
+    public bool     StartUpdatePricesInProgress { get; set; }
+    public ICommand OpenSpreadsheetProcess      { get; }
+    public bool     OpenSpreadsheetInProgress   { get; set; }
+    public ICommand ExecuteFilePickerProcess    { get; }
+    public bool     OpenFilePickerInProgress    { get; set; }
 
     public string? InstallationRootWorldOfWarcraft
     {
         get => installationRootWorldOfWarcraft;
         set => SetField(ref installationRootWorldOfWarcraft, value);
+    }
+
+    public ObservableCollection<string> AccountnamesFromInstallationDirectory
+    {
+        get => accountnamesFromInstallationDirectory;
+        set => SetField(ref accountnamesFromInstallationDirectory, value);
+    }
+
+    public string? SelectedAccount
+    {
+        get => selectedAccount;
+        set => SetField(ref selectedAccount, value);
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -78,22 +93,40 @@ public class UpdateProcessViewModel : INotifyPropertyChanged
         OpenSpreadsheetInProgress = false;
     }
 
-    private async Task OpenFilePicker()
+    private async Task ExecuteFilePicker()
     {
         if (OpenFilePickerInProgress)
             return;
 
         OpenSpreadsheetInProgress = true;
 
-        if (fileDialogService is FileDialogService service)
-            InstallationRootWorldOfWarcraft = await service.SelectWoWInstallationRoot();
-        else
-            InstallationRootWorldOfWarcraft = await fileDialogService.SelectDirectory();
+        try
+        {
+            if (fileDialogService is FileDialogService service)
+                InstallationRootWorldOfWarcraft = await service.SelectWoWInstallationRoot();
+            else
+                InstallationRootWorldOfWarcraft = await fileDialogService.SelectDirectory();
 
-        OpenSpreadsheetInProgress = false;
+            var accountnames = await fileDialogService.GetAccountNames();
+            AccountnamesFromInstallationDirectory = new ObservableCollection<string>(accountnames);
+        }
+        catch (Exception e)
+        {
+            MessageBox.Show(e.Message, "Halt Stop", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+        finally
+        {
+            OpenSpreadsheetInProgress = false;
+        }
     }
 
-    protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+
+        if (propertyName == nameof(SelectedAccount) && !string.IsNullOrWhiteSpace(SelectedAccount))
+            InstallationRootWorldOfWarcraft = InstallationRootWorldOfWarcraft?.Replace(FileDialogService.AccountNamePlaceholder, SelectedAccount);
+    }
 
     protected bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
