@@ -6,14 +6,14 @@ namespace AhAnalyticsPriceUpdater.Services;
 
 public class SpreadsheetService
 {
-    private const    string            RelativeFileDirectory = "Spreadsheets\\AhAnalytics.xlsx";
-    private readonly ILogger           logger;
-    private readonly ScanDataDecrypter scanDataDecrypter;
-    private          ExcelWorksheet?   matsSheet;
-    private          ExcelWorkbook?    workbook;
+    private const    string                      RelativeFileDirectory = "Spreadsheets\\AhAnalytics.xlsx";
+    private readonly ILogger<SpreadsheetService> logger;
+    private readonly ScanDataDecrypter           scanDataDecrypter;
+    private          ExcelWorksheet?             matsSheet;
+    private          ExcelWorkbook?              workbook;
 
-    public SpreadsheetService(ScanDataDecrypter scanDataDecrypter,
-                              ILogger           logger)
+    public SpreadsheetService(ScanDataDecrypter           scanDataDecrypter,
+                              ILogger<SpreadsheetService> logger)
     {
         Initialize();
 

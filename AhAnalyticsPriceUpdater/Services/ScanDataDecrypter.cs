@@ -4,11 +4,9 @@ using Microsoft.Extensions.Logging;
 
 namespace AhAnalyticsPriceUpdater.Services;
 
-public class ScanDataDecrypter(ILogger logger, IConfiguration configuration)
+public class ScanDataDecrypter(ILogger<ScanDataDecrypter> logger, IConfiguration configuration)
 {
-    private const    string         ScanDataSourceFile = "ScanDataFunnel\\Auc-ScanData.lua";
-    private readonly IConfiguration configuration      = configuration;
-    private readonly ILogger        logger             = logger;
+    private const string ScanDataSourceFile = "ScanDataFunnel\\Auc-ScanData.lua";
 
     public List<AuctionData> GetAllAuctions()
     {
@@ -52,7 +50,7 @@ public class ScanDataDecrypter(ILogger logger, IConfiguration configuration)
 
             var itemsToTake = 10;
 
-            if(withoutZeroPriceAsc.Count == 0)
+            if (withoutZeroPriceAsc.Count == 0)
                 continue;
 
             if (withoutZeroPriceAsc.Count < itemsToTake)

@@ -1,13 +1,18 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+using AhAnalyticsPriceUpdater.Services;
 
 namespace AhAnalyticsPriceUpdater.Frontend.Models;
 
 public class UpdateProcessViewModel : INotifyPropertyChanged
 {
-    public UpdateProcessViewModel()
+    private readonly SpreadsheetService spreadsheetService;
+
+    public UpdateProcessViewModel(SpreadsheetService spreadsheetService)
     {
+        this.spreadsheetService = spreadsheetService;
+
         StartUpdatePricesProcess = new RelayCommand(StartUpdatePrices);
         OpenSpreadsheetProcess   = new RelayCommand(OpenSpreadsheet);
     }
