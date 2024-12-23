@@ -5,11 +5,11 @@ namespace AhAnalyticsPriceUpdater;
 
 public static class LogProvider
 {
-    private static ILogger logger;
+    private static ILogger? logger;
 
-    private static void InitializeLogging()
+    private static void InitializeLogging<T>()
     {
-        var logFilePath = Path.Combine(Directory.GetCurrentDirectory(), nameof(ScanDataDecrypter) + ".log");
+        var logFilePath = Path.Combine(Directory.GetCurrentDirectory(), nameof(T) + ".log");
 
         var loggerFactory = LoggerFactory.Create(builder =>
         {
@@ -21,9 +21,9 @@ public static class LogProvider
         logger ??= loggerFactory.CreateLogger(nameof(ScanDataDecrypter));
     }
 
-    public static ILogger GetLogger()
+    public static ILogger? GetLogger<T>()
     {
-        InitializeLogging();
+        InitializeLogging<T>();
 
         return logger;
     }

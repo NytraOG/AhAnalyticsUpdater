@@ -3,18 +3,12 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:models="clr-namespace:AhAnalyticsPriceUpdater.Frontend.Models"
         mc:Ignorable="d"
         Title="MainWindow" Height="215" Width="290">
-    <Window.DataContext>
-        <models:UpdateProcessViewModel />
-    </Window.DataContext>
+
     <Grid>
-        <Button Content="Update Prices" HorizontalAlignment="Left" Margin="10,47,0,0" VerticalAlignment="Top"
-                Height="120" Width="120">
-        <Button Content="Open Sheet" HorizontalAlignment="Stretch" Margin="140,47,0,0" VerticalAlignment="Top"
-                Height="120" Width="120" />
-        <ProgressBar Height="24" Margin="10,10,15,0" VerticalAlignment="Top" Value="45" Cursor="IBeam"
-                     Foreground="#FF06B025" />
+        <Button Content="Update Prices" HorizontalAlignment="Left" Margin="10,47,0,0" VerticalAlignment="Top" Height="120" Width="120" Command="{Binding StartUpdatePricesProcess}"/>
+        <Button Content="Open Sheet" HorizontalAlignment="Stretch" Margin="140,47,0,0" VerticalAlignment="Top" Height="120" Width="120" Command="{Binding OpenSpreadsheetProcess}"/>
+        <ProgressBar Height="24" Margin="10,10,15,0" VerticalAlignment="Top" Value="45" Cursor="IBeam" Foreground="#FF06B025" />
     </Grid>
 </Window>

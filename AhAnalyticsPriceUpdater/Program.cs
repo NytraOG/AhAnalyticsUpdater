@@ -7,7 +7,7 @@ var builder = new ConfigurationBuilder()
              .AddJsonFile("appsettings.json", true, true);
 
 IConfiguration configuration = builder.Build();
-var            logger        = LogProvider.GetLogger();
+var            logger        = LogProvider.GetLogger<ScanDataDecrypter>();
 
 var decrypter = new ScanDataDecrypter(logger, configuration);
 var sheetService = new SpreadsheetService(decrypter, logger);
