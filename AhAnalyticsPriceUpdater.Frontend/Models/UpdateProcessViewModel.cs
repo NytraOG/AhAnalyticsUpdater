@@ -14,7 +14,7 @@ public class UpdateProcessViewModel : INotifyPropertyChanged
         this.spreadsheetService = spreadsheetService;
 
         StartUpdatePricesProcess = new AsyncRelayCommand(StartUpdatePrices);
-        OpenSpreadsheetProcess   = new RelayCommand(OpenSpreadsheet);
+        OpenSpreadsheetProcess   = new AsyncRelayCommand(OpenSpreadsheet);
     }
 
     public ICommand                           StartUpdatePricesProcess    { get; }
