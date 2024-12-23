@@ -1,4 +1,5 @@
-﻿using AhAnalyticsPriceUpdater.Models;
+﻿using System.Diagnostics;
+using AhAnalyticsPriceUpdater.Models;
 using Microsoft.Extensions.Logging;
 using OfficeOpenXml;
 
@@ -29,6 +30,12 @@ public class SpreadsheetService
 
         UpdateMaterialPrices(auctions);
         UpdateSellingMarketprices(auctions);
+    });
+
+    public void OpenSpreadsheet() => Process.Start(new ProcessStartInfo
+    {
+        UseShellExecute = true,
+        FileName        = GetSpreadsheetDirectory()
     });
 
     private void UpdateMaterialPrices(List<AuctionData> auctions)
@@ -214,7 +221,9 @@ public class SpreadsheetService
         }
         catch (Exception e)
         {
+            logger.LogError(e.Message);
             logger.LogError(e.StackTrace);
+            throw;
         }
     }
 }

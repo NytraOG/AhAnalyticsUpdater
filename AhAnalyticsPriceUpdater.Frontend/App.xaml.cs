@@ -1,6 +1,8 @@
 ﻿using System.IO;
 using System.Windows;
+using AhAnalyticsPriceUpdater.Frontend.Interfaces;
 using AhAnalyticsPriceUpdater.Frontend.Models;
+using AhAnalyticsPriceUpdater.Frontend.Services;
 using AhAnalyticsPriceUpdater.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -36,6 +38,7 @@ public partial class App : Application
         services.AddSingleton(Configuration ?? throw new InvalidOperationException("Configuration is Null."));
         services.AddTransient<ScanDataDecrypter>();
         services.AddTransient<SpreadsheetService>();
+        services.AddTransient<IDialogService, FileDialogService>();
         services.AddSingleton<UpdateProcessViewModel>();
         services.AddSingleton<MainWindow>();
     }
