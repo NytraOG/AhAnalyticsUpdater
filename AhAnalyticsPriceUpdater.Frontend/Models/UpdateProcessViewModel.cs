@@ -13,7 +13,7 @@ public class UpdateProcessViewModel : INotifyPropertyChanged
     {
         this.spreadsheetService = spreadsheetService;
 
-        StartUpdatePricesProcess = new RelayCommand(StartUpdatePrices);
+        StartUpdatePricesProcess = new AsyncRelayCommand(StartUpdatePrices);
         OpenSpreadsheetProcess   = new RelayCommand(OpenSpreadsheet);
     }
 
@@ -23,7 +23,20 @@ public class UpdateProcessViewModel : INotifyPropertyChanged
     public bool                               OpenSpreadsheetInProgress   { get; set; }
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    private void StartUpdatePrices() { }
+    private async Task StartUpdatePrices()
+    {
+        if (StartUpdatePricesInProgress)
+            return;
+
+        StartUpdatePricesInProgress = true;
+
+        await Task.Run(() =>
+        {
+            spreadsheetService.UpdateSpreadsheet();
+        });
+
+        StartUpdatePricesInProgress = false;
+    }
 
     private void OpenSpreadsheet() { }
 
