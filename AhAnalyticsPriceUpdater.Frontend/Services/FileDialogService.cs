@@ -25,8 +25,8 @@ public class FileDialogService : IDialogService
         if (folderDialog.ShowDialog() == true)
             wowInstallationRoot = folderDialog.FolderName;
 
-        if (!wowInstallationRoot.Contains(BattleNet) || !wowInstallationRoot.Contains(WorldOfWarcraft))
-            throw new Exception($"Falsches Directory! Da will ich hin: \"..\\{BattleNet}\\{WorldOfWarcraft}");
+        if (!wowInstallationRoot.Contains(WorldOfWarcraft))
+            throw new Exception($"Falsches Directory! Da will ich hin: \"..\\{WorldOfWarcraft}");
 
         var incompleteRelativePath = Path.Combine(RelativeAccountDirectory, RelativeScanDataDirectory);
         var incompleteFullPath     = Path.Combine(wowInstallationRoot, incompleteRelativePath);

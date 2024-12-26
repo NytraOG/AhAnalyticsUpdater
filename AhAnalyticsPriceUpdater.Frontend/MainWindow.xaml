@@ -24,7 +24,7 @@
                 <Button Content="Open Sheet" Margin="10,10,10,10" VerticalAlignment="Top" Height="120" Width="120" Command="{Binding OpenSpreadsheetProcess}"/>
 
             </StackPanel>
-            <ProgressBar Height="24" Margin="10,10,10,10" VerticalAlignment="Top" Value="45" Cursor="IBeam" Foreground="#FF06B025" />
+            <ProgressBar Height="24" Margin="10,10,10,10" VerticalAlignment="Top" Value="{Binding ProgessbarValue}" Cursor="IBeam" Foreground="#FF06B025" />
         </StackPanel>
 
     </Grid>

@@ -1,28 +1,32 @@
-﻿using AhAnalyticsPriceUpdater.Models;
-using Microsoft.Extensions.Configuration;
+﻿using AhAnalyticsPriceUpdater.Interfaces;
+using AhAnalyticsPriceUpdater.Models;
 using Microsoft.Extensions.Logging;
 
 namespace AhAnalyticsPriceUpdater.Services;
 
-public class ScanDataDecrypter(ILogger<ScanDataDecrypter> logger, IConfiguration configuration)
+public class ScanDataDecrypter(ILogger<ScanDataDecrypter> logger) : IProgressbarFeeder
 {
     private const string ScanDataSourceFile = "ScanDataFunnel\\Auc-ScanData.lua";
 
-    public List<AuctionData> GetAllAuctions()
+    public event IProgressbarFeeder.ScanningProgressedEventHandler? ScanningProgressed;
+
+    public List<AuctionData> GetAllAuctions(string? scanDataDirectory)
     {
         var auctionDataObjects = new List<AuctionData>();
 
         DoActionWithExceptionlogging(() =>
         {
-            var directory = GetScanDataDirectory();
-            var file      = File.ReadAllText(directory);
-
-            var normalizedScanData = GetNormalizedScanData(file);
+            var file = File.ReadAllText(scanDataDirectory!);
+            var normalizedScanData = GetNormalizedScanData(file); 
+            var progressPerScanDataLine = 1 / (double)normalizedScanData.Count;
 
             foreach (var scanDataStringValue in normalizedScanData)
             {
                 if (string.IsNullOrWhiteSpace(scanDataStringValue))
+                {
+                    ScanningProgressed?.Invoke(this, progressPerScanDataLine);
                     continue;
+                }
 
                 var fields = scanDataStringValue.Split(',');
 
@@ -30,6 +34,7 @@ public class ScanDataDecrypter(ILogger<ScanDataDecrypter> logger, IConfiguration
                     continue;
 
                 CreateAuctionDataObject(fields, auctionDataObjects);
+                ScanningProgressed?.Invoke(this, progressPerScanDataLine);
             }
         });
 
@@ -45,8 +50,8 @@ public class ScanDataDecrypter(ILogger<ScanDataDecrypter> logger, IConfiguration
         foreach (var auctionDatas in itemGroup)
         {
             var withoutZeroPriceAsc = auctionDatas.Where(ad => ad.BuyoutInCopper != 0)
-                                                  .OrderBy(ad => ad.BuyoutInCopper)
-                                                  .ToList();
+                .OrderBy(ad => ad.BuyoutInCopper)
+                .ToList();
 
             var itemsToTake = 10;
 
@@ -57,9 +62,9 @@ public class ScanDataDecrypter(ILogger<ScanDataDecrypter> logger, IConfiguration
                 itemsToTake = withoutZeroPriceAsc.Count;
 
             var selection = withoutZeroPriceAsc.Take(itemsToTake)
-                                               .ToList();
+                .ToList();
 
-            var totalPrice            = selection.Sum(s => s.BuyoutInCopper);
+            var totalPrice = selection.Sum(s => s.BuyoutInCopper);
             var averageBuyoutInCopper = totalPrice / itemsToTake;
 
             var cheapestOne = selection.MinBy(ad => ad.BuyoutInCopper);
@@ -76,7 +81,7 @@ public class ScanDataDecrypter(ILogger<ScanDataDecrypter> logger, IConfiguration
 
     private static List<string> GetNormalizedScanData(string file)
     {
-        var resultStrings   = new List<string>();
+        var resultStrings = new List<string>();
         var relevantContent = file.Split("[\"ropes\"] = {")[1].Trim();
 
         relevantContent = RemoveEndingClump(relevantContent);
@@ -109,11 +114,11 @@ public class ScanDataDecrypter(ILogger<ScanDataDecrypter> logger, IConfiguration
     {
         var obj = new AuctionData
         {
-            ItemName       = fields[8].Replace("\\\"", string.Empty),
-            StackSize      = int.Parse(fields[10]),
-            MinLvl         = int.Parse(fields[13]),
+            ItemName = fields[8].Replace("\\\"", string.Empty),
+            StackSize = int.Parse(fields[10]),
+            MinLvl = int.Parse(fields[13]),
             BuyoutInCopper = int.Parse(fields[16]),
-            Seller         = fields[19].Replace("\\\"", string.Empty)
+            Seller = fields[19].Replace("\\\"", string.Empty)
         };
 
         auctionDataObjects.Add(obj);
@@ -121,7 +126,7 @@ public class ScanDataDecrypter(ILogger<ScanDataDecrypter> logger, IConfiguration
 
     private string GetScanDataDirectory()
     {
-        var baseDirectory     = Directory.GetCurrentDirectory();
+        var baseDirectory = Directory.GetCurrentDirectory();
         var scanDataDirectory = Path.Combine(baseDirectory, ScanDataSourceFile);
 
         if (scanDataDirectory is null)

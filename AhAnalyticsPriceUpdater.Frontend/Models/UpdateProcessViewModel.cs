@@ -11,28 +11,39 @@ namespace AhAnalyticsPriceUpdater.Frontend.Models;
 
 public class UpdateProcessViewModel : INotifyPropertyChanged
 {
-    private readonly IDialogService               fileDialogService;
-    private readonly SpreadsheetService           spreadsheetService;
-    private          ObservableCollection<string> accountnamesFromInstallationDirectory;
-    private          string?                      installationRootWorldOfWarcraft;
-    private          string?                      selectedAccount;
+    private readonly IDialogService fileDialogService;
+    private readonly SpreadsheetService spreadsheetService;
+    private ObservableCollection<string> accountnamesFromInstallationDirectory = new();
+    private string? installationRootWorldOfWarcraft;
+    private string? selectedAccount;
+    private double progessbarValue;
 
     public UpdateProcessViewModel(SpreadsheetService spreadsheetService, IDialogService fileDialogService)
     {
-        this.fileDialogService  = fileDialogService;
+        ProgessbarValue = 0;
+        
+        this.fileDialogService = fileDialogService;
         this.spreadsheetService = spreadsheetService;
 
         StartUpdatePricesProcess = new AsyncRelayCommand(StartUpdatePrices);
-        OpenSpreadsheetProcess   = new AsyncRelayCommand(OpenSpreadsheet);
+        OpenSpreadsheetProcess = new AsyncRelayCommand(OpenSpreadsheet);
         ExecuteFilePickerProcess = new AsyncRelayCommand(ExecuteFilePicker);
+
+        spreadsheetService.ScanningProgressed += SpreadsheetServiceOnScanningProgressed;
     }
 
-    public ICommand StartUpdatePricesProcess    { get; }
-    public bool     StartUpdatePricesInProgress { get; set; }
-    public ICommand OpenSpreadsheetProcess      { get; }
-    public bool     OpenSpreadsheetInProgress   { get; set; }
-    public ICommand ExecuteFilePickerProcess    { get; }
-    public bool     OpenFilePickerInProgress    { get; set; }
+    public ICommand StartUpdatePricesProcess { get; }
+    public bool StartUpdatePricesInProgress { get; set; }
+    public ICommand OpenSpreadsheetProcess { get; }
+    public bool OpenSpreadsheetInProgress { get; set; }
+    public ICommand ExecuteFilePickerProcess { get; }
+    public bool OpenFilePickerInProgress { get; set; }
+
+    public double ProgessbarValue
+    {
+        get => progessbarValue;
+        set => SetField(ref progessbarValue, value);
+    }
 
     public string? InstallationRootWorldOfWarcraft
     {
@@ -54,6 +65,11 @@ public class UpdateProcessViewModel : INotifyPropertyChanged
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
+    private void SpreadsheetServiceOnScanningProgressed(object sender, double progress)
+    {
+        ProgessbarValue = progress;
+    }
+
     private async Task StartUpdatePrices()
     {
         if (StartUpdatePricesInProgress)
@@ -65,11 +81,12 @@ public class UpdateProcessViewModel : INotifyPropertyChanged
         {
             try
             {
-                spreadsheetService.UpdateSpreadsheet();
+                spreadsheetService.UpdateSpreadsheet(InstallationRootWorldOfWarcraft);
             }
             catch (InvalidOperationException)
             {
-                MessageBox.Show("Spreadsheet schließen bitte.", "InFoRmAtIoN", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("Spreadsheet schließen bitte.", "InFoRmAtIoN", MessageBoxButton.OK,
+                    MessageBoxImage.Information);
             }
             finally
             {
@@ -85,10 +102,7 @@ public class UpdateProcessViewModel : INotifyPropertyChanged
 
         OpenSpreadsheetInProgress = true;
 
-        await Task.Run(() =>
-        {
-            spreadsheetService.OpenSpreadsheet();
-        });
+        await Task.Run(() => { spreadsheetService.OpenSpreadsheet(); });
 
         OpenSpreadsheetInProgress = false;
     }
@@ -125,7 +139,8 @@ public class UpdateProcessViewModel : INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
         if (propertyName == nameof(SelectedAccount) && !string.IsNullOrWhiteSpace(SelectedAccount))
-            InstallationRootWorldOfWarcraft = InstallationRootWorldOfWarcraft?.Replace(FileDialogService.AccountNamePlaceholder, SelectedAccount);
+            InstallationRootWorldOfWarcraft =
+                InstallationRootWorldOfWarcraft?.Replace(FileDialogService.AccountNamePlaceholder, SelectedAccount);
     }
 
     protected bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
