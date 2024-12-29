@@ -14,7 +14,7 @@ public class UpdateProcessViewModel : INotifyPropertyChanged
     private readonly IDialogService fileDialogService;
     private readonly SpreadsheetService spreadsheetService;
     private ObservableCollection<string> accountnamesFromInstallationDirectory = new();
-    private string? installationRootWorldOfWarcraft;
+    private string? scanDataDirectory;
     private string? selectedAccount;
     private double progessbarValue;
 
@@ -45,10 +45,10 @@ public class UpdateProcessViewModel : INotifyPropertyChanged
         set => SetField(ref progessbarValue, value);
     }
 
-    public string? InstallationRootWorldOfWarcraft
+    public string? ScanDataDirectory
     {
-        get => installationRootWorldOfWarcraft;
-        set => SetField(ref installationRootWorldOfWarcraft, value);
+        get => scanDataDirectory;
+        set => SetField(ref scanDataDirectory, value);
     }
 
     public ObservableCollection<string> AccountnamesFromInstallationDirectory
@@ -81,7 +81,7 @@ public class UpdateProcessViewModel : INotifyPropertyChanged
         {
             try
             {
-                spreadsheetService.UpdateSpreadsheet(InstallationRootWorldOfWarcraft);
+                spreadsheetService.UpdateSpreadsheet(ScanDataDirectory);
             }
             catch (InvalidOperationException)
             {
@@ -117,9 +117,9 @@ public class UpdateProcessViewModel : INotifyPropertyChanged
         try
         {
             if (fileDialogService is FileDialogService service)
-                InstallationRootWorldOfWarcraft = await service.SelectWoWInstallationRoot();
+                ScanDataDirectory = await service.GetScanDataDirectory();
             else
-                InstallationRootWorldOfWarcraft = await fileDialogService.SelectDirectory();
+                ScanDataDirectory = await fileDialogService.SelectDirectory();
 
             var accountnames = await fileDialogService.GetAccountNames();
             AccountnamesFromInstallationDirectory = new ObservableCollection<string>(accountnames);
@@ -139,8 +139,8 @@ public class UpdateProcessViewModel : INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
         if (propertyName == nameof(SelectedAccount) && !string.IsNullOrWhiteSpace(SelectedAccount))
-            InstallationRootWorldOfWarcraft =
-                InstallationRootWorldOfWarcraft?.Replace(FileDialogService.AccountNamePlaceholder, SelectedAccount);
+            ScanDataDirectory =
+                ScanDataDirectory?.Replace(FileDialogService.AccountNamePlaceholder, SelectedAccount);
     }
 
     protected bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)

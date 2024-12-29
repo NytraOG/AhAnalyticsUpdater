@@ -46,5 +46,5 @@ public class FileDialogService : IDialogService
         return accountNames;
     }
 
-    public async Task<string> SelectWoWInstallationRoot() => await SelectDirectory("Select WoW Installation Root Directory");
+    public async Task<string> GetScanDataDirectory() => await SelectDirectory("Select WoW Installation Root Directory");
 }
