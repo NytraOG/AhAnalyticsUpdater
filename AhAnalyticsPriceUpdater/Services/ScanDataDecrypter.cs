@@ -9,6 +9,7 @@ public class ScanDataDecrypter(ILogger<ScanDataDecrypter> logger) : IProgressbar
     private const string ScanDataSourceFile = "ScanDataFunnel\\Auc-ScanData.lua";
 
     public event IProgressbarFeeder.ScanningProgressedEventHandler? ScanningProgressed;
+    public event IProgressbarFeeder.ScanningCompletedEventHandler?  ScanningCompleted;
 
     public List<AuctionData> GetAllAuctions(string? scanDataDirectory)
     {
@@ -16,8 +17,9 @@ public class ScanDataDecrypter(ILogger<ScanDataDecrypter> logger) : IProgressbar
 
         DoActionWithExceptionlogging(() =>
         {
-            var file = File.ReadAllText(scanDataDirectory!);
-            var normalizedScanData = GetNormalizedScanData(file); 
+            //var file = File.ReadAllText(scanDataDirectory!);
+            var file                    = File.ReadAllText(ScanDataSourceFile);
+            var normalizedScanData      = GetNormalizedScanData(file);
             var progressPerScanDataLine = 1 / (double)normalizedScanData.Count;
 
             foreach (var scanDataStringValue in normalizedScanData)
@@ -81,8 +83,9 @@ public class ScanDataDecrypter(ILogger<ScanDataDecrypter> logger) : IProgressbar
 
     private static List<string> GetNormalizedScanData(string file)
     {
-        var resultStrings = new List<string>();
-        var relevantContent = file.Split("[\"ropes\"] = {")[1].Trim();
+        var resultStrings      = new List<string>();
+        var contentSchlachtgut = file.Split("[\"ropes\"] = {");
+        var relevantContent    = contentSchlachtgut[3].Trim();
 
         relevantContent = RemoveEndingClump(relevantContent);
 

@@ -19,7 +19,10 @@
       <None Update="Spreadsheets\AhAnalytics.xlsx">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
-      <None Update="ScanDataFunnel\Auc-ScanData.lua">
+      <None Update="ScanDataFunnel\Auc-ScanData_old3.lua">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="ScanDataFunnel\Auc-ScanData_old_german.lua">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
     </ItemGroup>

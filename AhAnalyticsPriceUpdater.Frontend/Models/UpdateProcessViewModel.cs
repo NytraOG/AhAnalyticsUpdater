@@ -11,33 +11,34 @@ namespace AhAnalyticsPriceUpdater.Frontend.Models;
 
 public class UpdateProcessViewModel : INotifyPropertyChanged
 {
-    private readonly IDialogService fileDialogService;
-    private readonly SpreadsheetService spreadsheetService;
-    private ObservableCollection<string> accountnamesFromInstallationDirectory = new();
-    private string? scanDataDirectory;
-    private string? selectedAccount;
-    private double progessbarValue;
+    private readonly IDialogService               fileDialogService;
+    private readonly SpreadsheetService           spreadsheetService;
+    private          ObservableCollection<string> accountnamesFromInstallationDirectory = new();
+    private          double                       progessbarValue;
+    private          string?                      scanDataDirectory;
+    private          string?                      selectedAccount;
 
     public UpdateProcessViewModel(SpreadsheetService spreadsheetService, IDialogService fileDialogService)
     {
         ProgessbarValue = 0;
-        
-        this.fileDialogService = fileDialogService;
+
+        this.fileDialogService  = fileDialogService;
         this.spreadsheetService = spreadsheetService;
 
         StartUpdatePricesProcess = new AsyncRelayCommand(StartUpdatePrices);
-        OpenSpreadsheetProcess = new AsyncRelayCommand(OpenSpreadsheet);
+        OpenSpreadsheetProcess   = new AsyncRelayCommand(OpenSpreadsheet);
         ExecuteFilePickerProcess = new AsyncRelayCommand(ExecuteFilePicker);
 
         spreadsheetService.ScanningProgressed += SpreadsheetServiceOnScanningProgressed;
+        spreadsheetService.ScanningCompleted  += SpreadsheetServiceOnScanningCompleted;
     }
 
-    public ICommand StartUpdatePricesProcess { get; }
-    public bool StartUpdatePricesInProgress { get; set; }
-    public ICommand OpenSpreadsheetProcess { get; }
-    public bool OpenSpreadsheetInProgress { get; set; }
-    public ICommand ExecuteFilePickerProcess { get; }
-    public bool OpenFilePickerInProgress { get; set; }
+    public ICommand StartUpdatePricesProcess    { get; }
+    public bool     StartUpdatePricesInProgress { get; set; }
+    public ICommand OpenSpreadsheetProcess      { get; }
+    public bool     OpenSpreadsheetInProgress   { get; set; }
+    public ICommand ExecuteFilePickerProcess    { get; }
+    public bool     OpenFilePickerInProgress    { get; set; }
 
     public double ProgessbarValue
     {
@@ -65,10 +66,9 @@ public class UpdateProcessViewModel : INotifyPropertyChanged
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    private void SpreadsheetServiceOnScanningProgressed(object sender, double progress)
-    {
-        ProgessbarValue = progress;
-    }
+    private void SpreadsheetServiceOnScanningCompleted() => ProgessbarValue = 0;
+
+    private void SpreadsheetServiceOnScanningProgressed(object sender, double progress) => ProgessbarValue += progress;
 
     private async Task StartUpdatePrices()
     {
@@ -86,7 +86,7 @@ public class UpdateProcessViewModel : INotifyPropertyChanged
             catch (InvalidOperationException)
             {
                 MessageBox.Show("Spreadsheet schließen bitte.", "InFoRmAtIoN", MessageBoxButton.OK,
-                    MessageBoxImage.Information);
+                                MessageBoxImage.Information);
             }
             finally
             {
@@ -102,7 +102,10 @@ public class UpdateProcessViewModel : INotifyPropertyChanged
 
         OpenSpreadsheetInProgress = true;
 
-        await Task.Run(() => { spreadsheetService.OpenSpreadsheet(); });
+        await Task.Run(() =>
+        {
+            spreadsheetService.OpenSpreadsheet();
+        });
 
         OpenSpreadsheetInProgress = false;
     }
@@ -139,8 +142,10 @@ public class UpdateProcessViewModel : INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
         if (propertyName == nameof(SelectedAccount) && !string.IsNullOrWhiteSpace(SelectedAccount))
+        {
             ScanDataDirectory =
-                ScanDataDirectory?.Replace(FileDialogService.AccountNamePlaceholder, SelectedAccount);
+                    ScanDataDirectory?.Replace(FileDialogService.AccountNamePlaceholder, SelectedAccount);
+        }
     }
 
     protected bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
