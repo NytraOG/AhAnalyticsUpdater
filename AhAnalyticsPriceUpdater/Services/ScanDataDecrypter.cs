@@ -115,14 +115,28 @@ public class ScanDataDecrypter(ILogger<ScanDataDecrypter> logger) : IProgressbar
 
     private static void CreateAuctionDataObject(string[] fields, List<AuctionData> auctionDataObjects)
     {
-        var obj = new AuctionData
+        AuctionData obj;
+
+        try
         {
-            ItemName = fields[8].Replace("\\\"", string.Empty),
-            StackSize = int.Parse(fields[10]),
-            MinLvl = int.Parse(fields[13]),
-            BuyoutInCopper = int.Parse(fields[16]),
-            Seller = fields[19].Replace("\\\"", string.Empty)
-        };
+            var stackSize      = int.TryParse(fields[10], out var stackSizeOut) ? stackSizeOut : int.Parse(fields[12]);
+            var minLvl         = int.TryParse(fields[13], out var minLvlOut) ? minLvlOut : int.Parse(fields[15]);
+            var buyoutInCopper = int.TryParse(fields[16], out var buyoutInCopperOut) ? buyoutInCopperOut : int.Parse(fields[18]);
+
+            obj = new AuctionData
+            {
+                ItemName       = fields.Length > 28 ? fields[8].Replace("\\\"", string.Empty) + fields[9].Replace("\\\"", string.Empty) : fields[8].Replace("\\\"", string.Empty),
+                StackSize      = stackSize,
+                MinLvl         = minLvl,
+                BuyoutInCopper = buyoutInCopper,
+                Seller         = fields[19].Replace("\\\"", string.Empty)
+            };
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
 
         auctionDataObjects.Add(obj);
     }

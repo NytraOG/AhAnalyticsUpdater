@@ -25,6 +25,9 @@
       <None Update="ScanDataFunnel\Auc-ScanData_old_german.lua">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
+      <None Update="ScanDataFunnel\Auc-ScanData.lua">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
     </ItemGroup>
 
 </Project>
